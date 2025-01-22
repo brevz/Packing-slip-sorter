@@ -40,7 +40,6 @@ def fix_orientation(page):
 
 def process_pdf(uploaded_file, addresses):
     """Process the uploaded PDF, group multi-page packing slips, and create PDFs."""
-    # Use a temporary directory for secure file handling
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir_path = Path(temp_dir)
         reader = PdfReader(uploaded_file)
@@ -135,41 +134,48 @@ def process_pdf(uploaded_file, addresses):
 # Streamlit UI
 st.title("Packing Slip Sorter by Ben Revzin")
 
-# Add a disclaimer
-st.info(
-    """
-    **Note**: Your uploaded files are processed securely and temporarily. 
-    They are deleted automatically after processing and are not stored permanently.
-    """
-)
+# Password Protection
+password = "vdspeed"  # Set your password here
+user_input = st.text_input("Enter Password:", type="password")
 
-# File upload
-uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
+if user_input == password:
+    # Add a disclaimer
+    st.info(
+        """
+        **Note**: Your uploaded files are processed securely and temporarily. 
+        They are deleted automatically after processing and are not stored permanently.
+        """
+    )
 
-# Addresses input
-addresses = st.text_area(
-    "Enter addresses to sort by (one per line):",
-    value="\n".join([
-        "14502 COUNTY RD 15",
-        "7421 EAST STREET",
-        "2623 ELDAMAIN RD BLDG 221",
-        "5103 NORTH TOWN HALL ROAD",
-    ]),  # Default addresses
-    height=150,
-).splitlines()
+    # File upload
+    uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
-if uploaded_file and st.button("Sort PDF"):
-    if not addresses:
-        st.error("Please enter at least one address.")
-    else:
-        with st.spinner("Processing..."):
-            zip_buffer, zip_file_name = process_pdf(uploaded_file, addresses)
-            st.success("Processing complete! You can now download your files.")
+    # Addresses input
+    addresses = st.text_area(
+        "Enter addresses to sort by (one per line):",
+        value="\n".join([
+            "14502 COUNTY RD 15",
+            "7421 EAST STREET",
+            "2623 ELDAMAIN RD BLDG 221",
+            "5103 NORTH TOWN HALL ROAD",
+        ]),  # Default addresses
+        height=150,
+    ).splitlines()
 
-            # Download ZIP file
-            st.download_button(
-                label="Download All PDFs (ZIP)",
-                data=zip_buffer,
-                file_name=zip_file_name,
-                mime="application/zip",
-            )
+    if uploaded_file and st.button("Sort PDF"):
+        if not addresses:
+            st.error("Please enter at least one address.")
+        else:
+            with st.spinner("Processing..."):
+                zip_buffer, zip_file_name = process_pdf(uploaded_file, addresses)
+                st.success("Processing complete! You can now download your files.")
+
+                # Download ZIP file
+                st.download_button(
+                    label="Download All PDFs (ZIP)",
+                    data=zip_buffer,
+                    file_name=zip_file_name,
+                    mime="application/zip",
+                )
+elif user_input:
+    st.error("Incorrect password. Please try again.")
