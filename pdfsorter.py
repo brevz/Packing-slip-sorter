@@ -40,16 +40,15 @@ def fix_orientation(page):
 
 def process_pdf(uploaded_file, addresses):
     """Process the uploaded PDF, group multi-page packing slips, and create PDFs."""
-    reader = PdfReader(uploaded_file)
-    master_writer = PdfWriter()
-    zip_buffer = BytesIO()  # To store the ZIP file in memory
-
-    # Generate a timestamp for the ZIP file name
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-    # Prepare a temporary directory to store the output files
+    # Use a temporary directory for secure file handling
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir_path = Path(temp_dir)
+        reader = PdfReader(uploaded_file)
+        master_writer = PdfWriter()
+        zip_buffer = BytesIO()  # To store the ZIP file in memory
+
+        # Generate a timestamp for the ZIP file name
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
         # Dictionary to store pages for each address
         address_pages = {address: [] for address in addresses if address}
@@ -119,7 +118,7 @@ def process_pdf(uploaded_file, addresses):
                 writer.write(f)
 
         # Save master PDF
-        master_pdf_path = temp_dir_path / "all_slips_sorted.pdf"
+        master_pdf_path = temp_dir_path / "master_output.pdf"
         with open(master_pdf_path, "wb") as f:
             master_writer.write(f)
 
@@ -135,6 +134,14 @@ def process_pdf(uploaded_file, addresses):
 
 # Streamlit UI
 st.title("Packing Slip Sorter by Ben Revzin")
+
+# Add a disclaimer
+st.info(
+    """
+    **Note**: Your uploaded files are processed securely and temporarily. 
+    They are deleted automatically after processing and are not stored permanently.
+    """
+)
 
 # File upload
 uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
