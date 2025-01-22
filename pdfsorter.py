@@ -134,23 +134,22 @@ def process_pdf(uploaded_file, addresses):
 # Streamlit UI
 st.title("Packing Slip Sorter by Ben Revzin")
 
-# Initialize session state for clearing
-if "step" not in st.session_state:
-    st.session_state.step = "password"  # Start at the password screen
+# Initialize session state
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
 
-# Password Protection
-password = "vdspeed"  # Set your password here
-
-if st.session_state.step == "password":
+# Password Screen
+password = "vdspeed"  # Update this to your password
+if not st.session_state.authenticated:
     user_input = st.text_input("Enter Password:", type="password")
-
     if user_input == password:
-        st.session_state.step = "main"
+        st.session_state.authenticated = True
+        st.success("Password accepted! You now have access.")
     elif user_input:
         st.error("Incorrect password. Please try again.")
 
-elif st.session_state.step == "main":
-    # Add a disclaimer
+# Main App Screen
+if st.session_state.authenticated:
     st.info(
         """
         **Note**: Your uploaded files are processed securely and temporarily. 
@@ -158,10 +157,8 @@ elif st.session_state.step == "main":
         """
     )
 
-    # File upload
     uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
-    # Addresses input
     addresses = st.text_area(
         "Enter addresses to sort by (one per line):",
         value="\n".join([
@@ -169,7 +166,7 @@ elif st.session_state.step == "main":
             "7421 EAST STREET",
             "2623 ELDAMAIN RD BLDG 221",
             "5103 NORTH TOWN HALL ROAD",
-        ]),  # Default addresses
+        ]),
         height=150,
     ).splitlines()
 
@@ -180,14 +177,9 @@ elif st.session_state.step == "main":
             with st.spinner("Processing..."):
                 zip_buffer, zip_file_name = process_pdf(uploaded_file, addresses)
                 st.success("Processing complete! You can now download your files.")
-
-                # Download ZIP file
                 st.download_button(
                     label="Download All PDFs (ZIP)",
                     data=zip_buffer,
                     file_name=zip_file_name,
                     mime="application/zip",
                 )
-
-                # Show reset button after download
-                st.button("Reset App", on_click=lambda: st.session_state.update(step="password"))
