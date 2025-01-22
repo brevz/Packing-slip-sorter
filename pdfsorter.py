@@ -142,7 +142,7 @@ if st.session_state.clear_session:
     st.experimental_rerun()  # Restart the app
 
 # Password Protection
-password = "the-password"  # Set your password here
+password = "vdspeed"  # Set your password here
 user_input = st.text_input("Enter Password:", type="password")
 
 if user_input == password:
