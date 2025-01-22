@@ -134,8 +134,15 @@ def process_pdf(uploaded_file, addresses):
 # Streamlit UI
 st.title("Packing Slip Sorter by Ben Revzin")
 
+# Initialize session state for clearing
+if "clear_session" not in st.session_state:
+    st.session_state.clear_session = False
+
+if st.session_state.clear_session:
+    st.experimental_rerun()  # Restart the app
+
 # Password Protection
-password = "vdspeed"  # Set your password here
+password = "the-password"  # Set your password here
 user_input = st.text_input("Enter Password:", type="password")
 
 if user_input == password:
@@ -170,12 +177,13 @@ if user_input == password:
                 zip_buffer, zip_file_name = process_pdf(uploaded_file, addresses)
                 st.success("Processing complete! You can now download your files.")
 
-                # Download ZIP file
+                # Download ZIP file and clear session after download
                 st.download_button(
                     label="Download All PDFs (ZIP)",
                     data=zip_buffer,
                     file_name=zip_file_name,
                     mime="application/zip",
+                    on_click=lambda: setattr(st.session_state, "clear_session", True),
                 )
 elif user_input:
     st.error("Incorrect password. Please try again.")
