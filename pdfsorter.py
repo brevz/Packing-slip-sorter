@@ -1,3 +1,5 @@
+"""Packing Slip Sorter — Volume Distributors packing-slip PDF sorter."""
+
 import streamlit as st
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
@@ -131,55 +133,58 @@ def process_pdf(uploaded_file, addresses):
     return zip_buffer, zip_file_name
 
 
-# Streamlit UI
-st.title("Packing Slip Sorter by Ben Revzin")
+def run_app():
+    """Streamlit UI for the packing slip sorter."""
+    st.title("Packing Slip Sorter by Ben Revzin")
 
-# Initialize session state
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
 
-# Password Screen
-password = "vdspeed"  # Update this to your password
-if not st.session_state.authenticated:
-    user_input = st.text_input("Enter Password:", type="password")
-    if user_input == password:
-        st.session_state.authenticated = True
-        st.success("Password accepted! You now have access.")
-    elif user_input:
-        st.error("Incorrect password. Please try again.")
+    password = "vdspeed"
+    if not st.session_state.authenticated:
+        user_input = st.text_input("Enter Password:", type="password")
+        if user_input == password:
+            st.session_state.authenticated = True
+            st.success("Password accepted! You now have access.")
+        elif user_input:
+            st.error("Incorrect password. Please try again.")
 
-# Main App Screen
-if st.session_state.authenticated:
-    st.info(
-        """
-        **Note**: Your uploaded files are processed securely and temporarily. 
-        They are deleted automatically after processing and are not stored permanently.
-        """
-    )
+    if st.session_state.authenticated:
+        st.info(
+            """
+            **Note**: Your uploaded files are processed securely and temporarily. 
+            They are deleted automatically after processing and are not stored permanently.
+            """
+        )
 
-    uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
+        uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
-    addresses = st.text_area(
-        "Enter addresses to sort by (one per line):",
-        value="\n".join([
-            "14502 COUNTY RD 15",
-            "7421 EAST STREET",
-            "2623 ELDAMAIN RD BLDG 221",
-            "5103 NORTH TOWN HALL ROAD",
-        ]),
-        height=150,
-    ).splitlines()
+        addresses = st.text_area(
+            "Enter addresses to sort by (one per line):",
+            value="\n".join([
+                "14502 COUNTY RD 15",
+                "7421 EAST STREET",
+                "2623 ELDAMAIN RD BLDG 221",
+                "5103 NORTH TOWN HALL ROAD",
+            ]),
+            height=150,
+        ).splitlines()
 
-    if uploaded_file and st.button("Sort PDF"):
-        if not addresses:
-            st.error("Please enter at least one address.")
-        else:
-            with st.spinner("Processing..."):
-                zip_buffer, zip_file_name = process_pdf(uploaded_file, addresses)
-                st.success("Processing complete! You can now download your files.")
-                st.download_button(
-                    label="Download All PDFs (ZIP)",
-                    data=zip_buffer,
-                    file_name=zip_file_name,
-                    mime="application/zip",
-                )
+        if uploaded_file and st.button("Sort PDF"):
+            if not addresses:
+                st.error("Please enter at least one address.")
+            else:
+                with st.spinner("Processing..."):
+                    zip_buffer, zip_file_name = process_pdf(uploaded_file, addresses)
+                    st.success("Processing complete! You can now download your files.")
+                    st.download_button(
+                        label="Download All PDFs (ZIP)",
+                        data=zip_buffer,
+                        file_name=zip_file_name,
+                        mime="application/zip",
+                    )
+
+
+# Streamlit runs the entry file as __main__; wrappers import run_app() instead.
+if __name__ == "__main__":
+    run_app()
